@@ -1,0 +1,71 @@
+removeStrategy:
+  rbac: SYNC
+  items: NONE
+items:
+- kind: folder
+  name: rv590
+  groups:
+  - members:
+      users:
+      - rakesh588
+      - rakesh588-admin
+    roles:
+    - name: browse
+      grantedAt: current
+    - name: workshop-admin
+      grantedAt: child
+    name: Team Administrators
+  filteredRoles:
+  - workshop-admin
+  - browse
+  items:
+  - kind: managedController
+    name: dev-controller
+    properties:
+    - healthReporting:
+        enabled: true
+    - configurationAsCode:
+        bundle: rv590-dev-controller
+    - optOutProperty:
+        securityEnforcerOptOutMode:
+          authorizationOptOutMode: {
+            }
+    configuration:
+      kubernetes:
+        memory: 4000
+        cpus: 1.0
+        clusterEndpointId: default
+        disk: 10
+        storageClassName: premium-rwo
+        domain: rv590-dev-controller
+        namespace: controllers
+        yaml: |
+          kind: "StatefulSet"
+          spec:
+            template:
+              metadata:
+                labels:
+                  networking/allow-internet-access: "true"
+              spec:
+                containers:
+                - name: "jenkins"
+                  env:
+                  - name: "SECRETS"
+                    value: "/var/jenkins_home/jcasc_secrets"
+                  - name: "GITHUB_ORGANIZATION"
+                    value: "rv590"
+                  - name: "GITHUB_USER"
+                    value: "rakesh588"
+                  - name: "GITHUB_APP"
+                    value: "cloudbees-ci-casc-workshop"
+                  - name: "CONTROLLER_SUBDOMAIN"
+                    value: "rv590-dev-controller"
+                  - name: "CASC_BUNDLE_ID"
+                    value: "rv590-dev-controller"
+                  volumeMounts:
+                  - name: "jcasc-secrets"
+                    mountPath: "/var/jenkins_home/jcasc_secrets"
+                volumes:
+                - name: "jcasc-secrets"
+                  secret:
+                    secretName: cbci-mc-secret
